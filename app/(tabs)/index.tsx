@@ -1,98 +1,264 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+import { useRef, useState } from "react";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import PagerView from "react-native-pager-view";
 
-import { HelloWave } from '@/components/hello-wave';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Link } from 'expo-router';
+const today = new Date();
 
-export default function HomeScreen() {
+const dateString = today.toLocaleDateString("en-US", {
+  weekday: "long",
+  month: "short",
+  day: "numeric",
+});
+
+export default function TodayScreen() {
+
+  const pagerRef = useRef<PagerView>(null);
+  const [page, setPage] = useState(1);
+
+  const goToPage = (index: number) => {
+    pagerRef.current?.setPage(index);
+    setPage(index);
+  };
+
+  const [habits, setHabits] = useState([
+    { name: "Meditate", icon: "🧘", done: false, streak: 4 },
+    { name: "Read", icon: "📚", done: false, streak: 7 },
+    { name: "Workout", icon: "💪", done: false, streak: 2 },
+  ]);
+
+  const toggleHabit = (index: number) => {
+    const updated = [...habits];
+
+    updated[index].done = !updated[index].done;
+
+    if (updated[index].done) {
+      updated[index].streak += 1;
+    }
+
+    setHabits(updated);
+  };
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <Link href="/modal">
-          <Link.Trigger>
-            <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-          </Link.Trigger>
-          <Link.Preview />
-          <Link.Menu>
-            <Link.MenuAction title="Action" icon="cube" onPress={() => alert('Action pressed')} />
-            <Link.MenuAction
-              title="Share"
-              icon="square.and.arrow.up"
-              onPress={() => alert('Share pressed')}
-            />
-            <Link.Menu title="More" icon="ellipsis">
-              <Link.MenuAction
-                title="Delete"
-                icon="trash"
-                destructive
-                onPress={() => alert('Delete pressed')}
-              />
-            </Link.Menu>
-          </Link.Menu>
-        </Link>
+    <View style={styles.container}>
 
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+      {/* HEADER */}
+
+      <View style={styles.headerContainer}>
+        <Text style={styles.header}>Today</Text>
+        <Text style={styles.date}>{dateString}</Text>
+      </View>
+
+      {/* TABS */}
+
+      <View style={styles.tabs}>
+
+        <TouchableOpacity onPress={() => goToPage(0)}>
+          <Text style={[styles.tab, page === 0 && styles.activeTab]}>
+            Tasks
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity onPress={() => goToPage(1)}>
+          <Text style={[styles.tab, page === 1 && styles.activeTab]}>
+            Habits
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity onPress={() => goToPage(2)}>
+          <Text style={[styles.tab, page === 2 && styles.activeTab]}>
+            Focus
+          </Text>
+        </TouchableOpacity>
+
+      </View>
+
+      {/* SLIDE PAGES */}
+
+      <PagerView
+        ref={pagerRef}
+        style={styles.pager}
+        initialPage={1}
+        onPageSelected={(e) => setPage(e.nativeEvent.position)}
+      >
+
+        {/* TASKS */}
+
+        <View key="1" style={styles.page}>
+
+          <View style={styles.card}>
+            <Text style={styles.sectionTitle}>Tasks</Text>
+
+            <Text style={styles.task}>• Study React</Text>
+            <Text style={styles.task}>• Go to the gym</Text>
+            <Text style={styles.task}>• Review code</Text>
+          </View>
+
+        </View>
+
+        {/* HABITS */}
+
+        <View key="2" style={styles.page}>
+
+          <View style={styles.card}>
+
+            <Text style={styles.sectionTitle}>Habits</Text>
+
+            {habits.map((habit, index) => (
+              <TouchableOpacity
+                key={index}
+                style={styles.habit}
+                onPress={() => toggleHabit(index)}
+              >
+
+                <Text style={styles.habitText}>
+                  {habit.icon} {habit.name}
+                </Text>
+
+                <View style={styles.rightSide}>
+
+                  {habit.done && (
+                    <Text style={styles.check}>✓</Text>
+                  )}
+
+                  <Text style={styles.streak}>
+                    🔥 {habit.streak}
+                  </Text>
+
+                </View>
+
+              </TouchableOpacity>
+            ))}
+
+          </View>
+
+        </View>
+
+        {/* FOCUS */}
+
+        <View key="3" style={styles.page}>
+
+          <View style={styles.card}>
+
+            <Text style={styles.sectionTitle}>Focus</Text>
+
+            <Text style={styles.focusText}>
+              Start a focus session
+            </Text>
+
+          </View>
+
+        </View>
+
+      </PagerView>
+
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
+
+  container: {
+    flex: 1,
+    paddingTop: 70,
+    backgroundColor: "#F7F8FA",
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
+
+  headerContainer: {
+    paddingHorizontal: 20,
+    marginBottom: 10,
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
+
+  header: {
+    fontSize: 34,
+    fontWeight: "bold",
   },
+
+  date: {
+    color: "#777",
+    fontSize: 14,
+    marginTop: 4,
+  },
+
+  tabs: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    marginBottom: 10,
+  },
+
+  tab: {
+    fontSize: 16,
+    color: "#888",
+  },
+
+  activeTab: {
+    color: "#000",
+    fontWeight: "bold",
+  },
+
+  pager: {
+    flex: 1,
+  },
+
+  page: {
+    flex: 1,
+    alignItems: "center",
+    paddingTop: 10,
+  },
+
+  card: {
+    width: "90%",
+    backgroundColor: "white",
+    borderRadius: 20,
+    padding: 20,
+
+    shadowColor: "#000",
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
+    elevation: 3
+  },
+
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: "600",
+    marginBottom: 15,
+  },
+
+  task: {
+    fontSize: 16,
+    marginBottom: 10,
+  },
+
+  habit: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingVertical: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: "#eee",
+  },
+
+  habitText: {
+    fontSize: 16,
+  },
+
+  rightSide: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+  },
+
+  streak: {
+    color: "#FF6B00",
+    fontWeight: "600",
+  },
+
+  check: {
+    fontSize: 16,
+    color: "#2ecc71",
+  },
+
+  focusText: {
+    fontSize: 16,
+  }
+
 });
