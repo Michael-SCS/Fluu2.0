@@ -2,55 +2,87 @@ import { router } from "expo-router";
 import { useState } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
+import CreateFocusModal from "@/components/CreateFocusModal";
+
 export default function FloatingAddButton() {
 
   const [open, setOpen] = useState(false);
 
+  const [focusModal, setFocusModal] = useState(false);
+
   const goTo = (route: any) => {
+
     setOpen(false);
+
     router.push(route);
+
   };
 
   return (
+
     <View style={styles.container}>
 
+      <CreateFocusModal
+        visible={focusModal}
+        onClose={() => setFocusModal(false)}
+      />
+
       {open && (
+
         <View style={styles.menu}>
 
           <TouchableOpacity
             style={styles.option}
             onPress={() => goTo("/add-habit")}
           >
-            <Text style={styles.optionText}>Habit</Text>
+            <Text style={styles.optionText}>
+              Habit
+            </Text>
           </TouchableOpacity>
+
 
           <TouchableOpacity
             style={styles.option}
             onPress={() => goTo("/add-task")}
           >
-            <Text style={styles.optionText}>Task</Text>
+            <Text style={styles.optionText}>
+              Task
+            </Text>
           </TouchableOpacity>
+
 
           <TouchableOpacity
             style={styles.option}
-            onPress={() => goTo("/add-focus")}
+            onPress={() => {
+
+              setOpen(false)
+
+              setFocusModal(true)
+
+            }}
           >
-            <Text style={styles.optionText}>Focus</Text>
+            <Text style={styles.optionText}>
+              New Focus
+            </Text>
           </TouchableOpacity>
 
         </View>
+
       )}
 
       <TouchableOpacity
         style={styles.button}
         onPress={() => setOpen(!open)}
       >
+
         <Text style={styles.plus}>
           {open ? "×" : "+"}
         </Text>
+
       </TouchableOpacity>
 
     </View>
+
   );
 }
 

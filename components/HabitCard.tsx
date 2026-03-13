@@ -1,6 +1,5 @@
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
-
 import { useHabitStore } from "@/store/habitStore";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 type HabitCardProps = {
   id: string
@@ -39,29 +38,35 @@ export default function HabitCard({
 
         <Text style={styles.icon}>{icon}</Text>
 
-        <Text style={styles.name}>{name}</Text>
+        <View style={{ flex: 1 }}>
+
+          <Text style={styles.name}>{name}</Text>
+
+          {goal && (
+
+            <Text style={styles.meta}>
+              {progress ?? 0} / {goal} {unit}
+            </Text>
+
+          )}
+
+        </View>
 
       </View>
 
 
       {goal && (
 
-        <>
-          <Text style={styles.progressText}>
-            {progress ?? 0} / {goal} {unit}
-          </Text>
+        <View style={styles.progressBar}>
 
-          <View style={styles.progressBar}>
+          <View
+            style={[
+              styles.progressFill,
+              { width: `${percent * 100}%` }
+            ]}
+          />
 
-            <View
-              style={[
-                styles.progressFill,
-                { width: `${percent * 100}%` }
-              ]}
-            />
-
-          </View>
-        </>
+        </View>
 
       )}
 
@@ -84,17 +89,23 @@ const styles = StyleSheet.create({
     backgroundColor: "white",
     padding: 18,
     borderRadius: 16,
-    marginBottom: 12,
+    marginBottom: 14,
+
+    shadowColor: "#000",
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
+
+    elevation: 2,
   },
 
   row: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 6,
+    marginBottom: 10,
   },
 
   icon: {
-    fontSize: 22,
+    fontSize: 24,
     marginRight: 10,
   },
 
@@ -103,16 +114,16 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
 
-  progressText: {
-    fontSize: 14,
-    color: "#666",
+  meta: {
+    fontSize: 13,
+    color: "#777",
+    marginTop: 2,
   },
 
   progressBar: {
     height: 6,
     backgroundColor: "#eee",
     borderRadius: 10,
-    marginTop: 6,
   },
 
   progressFill: {
@@ -122,7 +133,7 @@ const styles = StyleSheet.create({
   },
 
   streak: {
-    marginTop: 6,
+    marginTop: 8,
     color: "#FF6B00",
     fontWeight: "600",
   },

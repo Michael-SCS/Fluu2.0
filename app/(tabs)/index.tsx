@@ -1,20 +1,24 @@
 import FloatingAddButton from "@/components/FloatingAddButton";
-import FocusCard from "@/components/FocusCard";
-import HabitCard from "@/components/HabitCard";
-import TaskCard from "@/components/TaskCard";
+
+import FocusSection from "@/components/FocusSection";
+import HabitsSection from "@/components/HabitsSection";
+import TasksSection from "@/components/TasksSection";
+
 import { useHabitStore } from "@/store/habitStore";
 
 import { useEffect, useRef, useState } from "react";
 
 import {
-  ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
-  View,
+  View
 } from "react-native";
 
 import PagerView from "react-native-pager-view";
+
+import { StatusBar } from "expo-status-bar";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const today = new Date();
 
@@ -24,57 +28,18 @@ const dateString = today.toLocaleDateString("en-US", {
   day: "numeric",
 });
 
-
-// --------------------------------------------------
-// FUNCIÓN QUE DECIDE SI EL HÁBITO SE MUESTRA HOY
-// --------------------------------------------------
-
-function shouldShowHabitToday(habit: any) {
-
-  const today = new Date();
-  const startDate = new Date(habit.startDate);
-
-  if (today < startDate) return false;
-
-  if (habit.repeatType === "daily") return true;
-
-  if (habit.repeatType === "once") {
-    return today.toDateString() === startDate.toDateString();
-  }
-
-  if (habit.repeatType === "weekly") {
-
-    const todayDay = today.getDay();
-
-    return habit.repeatConfig?.includes(todayDay);
-  }
-
-  return true;
-}
-
-
 export default function TodayScreen() {
 
   const pagerRef = useRef<PagerView>(null);
 
   const [page, setPage] = useState(1);
 
-  const habits = useHabitStore((state) => state.habits);
-
   const resetDailyProgress =
     useHabitStore((state) => state.resetDailyProgress);
 
-
-  // --------------------------------------------------
-  // RESET AUTOMÁTICO DEL DÍA
-  // --------------------------------------------------
-
   useEffect(() => {
-
     resetDailyProgress();
-
   }, []);
-
 
   const goToPage = (index: number) => {
 
@@ -84,18 +49,21 @@ export default function TodayScreen() {
 
   };
 
-
   return (
 
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
 
-      {/* HEADER */}
+      <StatusBar style="dark" />
 
       <View style={styles.headerContainer}>
 
-        <Text style={styles.header}>Today</Text>
+        <Text style={styles.header}>
+          Today
+        </Text>
 
-        <Text style={styles.date}>{dateString}</Text>
+        <Text style={styles.date}>
+          {dateString}
+        </Text>
 
       </View>
 
@@ -104,26 +72,34 @@ export default function TodayScreen() {
 
       <View style={styles.tabs}>
 
-        <TouchableOpacity onPress={() => goToPage(0)}>
-          <Text style={[styles.tab, page === 0 && styles.activeTab]}>
+        <TouchableOpacity
+          style={[styles.tabButton, page === 0 && styles.activeTab]}
+          onPress={() => goToPage(0)}
+        >
+          <Text style={styles.tabText}>
             Tasks
           </Text>
         </TouchableOpacity>
 
-        <TouchableOpacity onPress={() => goToPage(1)}>
-          <Text style={[styles.tab, page === 1 && styles.activeTab]}>
+        <TouchableOpacity
+          style={[styles.tabButton, page === 1 && styles.activeTab]}
+          onPress={() => goToPage(1)}
+        >
+          <Text style={styles.tabText}>
             Habits
           </Text>
         </TouchableOpacity>
 
-        <TouchableOpacity onPress={() => goToPage(2)}>
-          <Text style={[styles.tab, page === 2 && styles.activeTab]}>
+        <TouchableOpacity
+          style={[styles.tabButton, page === 2 && styles.activeTab]}
+          onPress={() => goToPage(2)}
+        >
+          <Text style={styles.tabText}>
             Focus
           </Text>
         </TouchableOpacity>
 
       </View>
-
 
 
       {/* PAGER */}
@@ -135,100 +111,37 @@ export default function TodayScreen() {
         onPageSelected={(e) => setPage(e.nativeEvent.position)}
       >
 
+        <TasksSection key="1" />
 
-        {/* TASKS */}
+        <HabitsSection key="2" />
 
-        <ScrollView key="1" style={styles.page}>
-
-          <View style={styles.section}>
-
-            <Text style={styles.sectionTitle}>Tasks</Text>
-
-            <TaskCard title="Study React" subtitle="Programming" />
-
-            <TaskCard title="Go to the gym" />
-
-            <TaskCard title="Review code" />
-
-          </View>
-
-        </ScrollView>
-
-
-
-        {/* HABITS */}
-
-        <ScrollView key="2" style={styles.page}>
-
-          <View style={styles.section}>
-
-            {habits
-              .filter((habit) => shouldShowHabitToday(habit))
-              .map((habit) => (
-
-                <HabitCard
-                  key={habit.id}
-                  id={habit.id}
-                  icon={habit.icon}
-                  name={habit.name}
-                  goal={habit.goal}
-                  progress={habit.progress}
-                  unit={habit.unit}
-                  streak={habit.streak}
-                />
-
-              ))}
-
-          </View>
-
-        </ScrollView>
-
-
-
-        {/* FOCUS */}
-
-        <ScrollView key="3" style={styles.page}>
-
-          <View style={styles.section}>
-
-            <Text style={styles.sectionTitle}>Focus</Text>
-
-            <FocusCard title="Read" duration={25} />
-
-            <FocusCard title="Learn Spanish" duration={30} />
-
-          </View>
-
-        </ScrollView>
+        <FocusSection key="3" />
 
       </PagerView>
 
 
-      {/* BOTÓN FLOTANTE */}
-
       <FloatingAddButton />
 
-    </View>
+    </SafeAreaView>
 
   );
 }
-
 
 const styles = StyleSheet.create({
 
   container: {
     flex: 1,
-    paddingTop: 70,
     backgroundColor: "#F7F8FA",
   },
 
   headerContainer: {
     paddingHorizontal: 24,
+    marginTop: 10,
     marginBottom: 20,
   },
 
   header: {
-    fontSize: 34,
+    fontSize: 36,
     fontWeight: "bold",
   },
 
@@ -240,37 +153,31 @@ const styles = StyleSheet.create({
 
   tabs: {
     flexDirection: "row",
-    justifyContent: "space-around",
-    marginBottom: 10,
+    marginHorizontal: 20,
+    backgroundColor: "#ECECEC",
+    borderRadius: 14,
+    padding: 4,
+    marginBottom: 20,
   },
 
-  tab: {
-    fontSize: 16,
-    color: "#888",
+  tabButton: {
+    flex: 1,
+    paddingVertical: 10,
+    alignItems: "center",
+    borderRadius: 10,
   },
 
   activeTab: {
+    backgroundColor: "white",
+  },
+
+  tabText: {
     color: "#000",
-    fontWeight: "bold",
+    fontWeight: "600",
   },
 
   pager: {
     flex: 1,
-  },
-
-  page: {
-    flex: 1,
-  },
-
-  section: {
-    paddingHorizontal: 20,
-    paddingBottom: 40,
-  },
-
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: "600",
-    marginBottom: 15,
   },
 
 });

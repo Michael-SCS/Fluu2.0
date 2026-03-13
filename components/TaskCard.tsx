@@ -1,46 +1,68 @@
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
-type TaskCardProps = {
-  title: string;
-  subtitle?: string;
-};
+type Props = {
+  title: string
+  subtitle?: string
+}
 
-export default function TaskCard({ title, subtitle }: TaskCardProps) {
+export default function TaskCard({ title, subtitle }: Props) {
+
   return (
-    <View style={styles.card}>
 
-      <Text style={styles.title}>{title}</Text>
+    <TouchableOpacity style={styles.card}>
 
-      {subtitle && (
-        <Text style={styles.subtitle}>{subtitle}</Text>
-      )}
+      <View style={styles.checkbox} />
 
-    </View>
-  );
+      <View style={{ flex: 1 }}>
+
+        <Text style={styles.title}>{title}</Text>
+
+        {subtitle && (
+          <Text style={styles.subtitle}>{subtitle}</Text>
+        )}
+
+      </View>
+
+    </TouchableOpacity>
+
+  )
 }
 
 const styles = StyleSheet.create({
 
   card: {
-    backgroundColor: "white",
-    padding: 18,
-    borderRadius: 16,
-    marginBottom: 12,
+    flexDirection: "row",
+    alignItems: "center",
 
-    shadowColor: "#000",
-    shadowOpacity: 0.05,
-    shadowRadius: 10,
-    elevation: 3
+    backgroundColor: "white",
+
+    padding: 16,
+    borderRadius: 14,
+
+    marginBottom: 12,
+  },
+
+  checkbox: {
+    width: 20,
+    height: 20,
+
+    borderRadius: 6,
+    borderWidth: 2,
+
+    borderColor: "#ddd",
+
+    marginRight: 12,
   },
 
   title: {
     fontSize: 16,
-    fontWeight: "600",
+    fontWeight: "500",
   },
 
   subtitle: {
-    marginTop: 4,
-    color: "#666",
+    color: "#888",
+    fontSize: 13,
+    marginTop: 2,
   },
 
 });
