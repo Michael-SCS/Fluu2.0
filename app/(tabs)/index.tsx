@@ -1,6 +1,16 @@
+import FloatingAddButton from "@/components/FloatingAddButton";
+import FocusCard from "@/components/FocusCard";
+import TaskCard from "@/components/TaskCard";
 import { useRef, useState } from "react";
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import {
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import PagerView from "react-native-pager-view";
+import HabitCard from "../../components/HabitCard";
 
 const today = new Date();
 
@@ -11,7 +21,6 @@ const dateString = today.toLocaleDateString("en-US", {
 });
 
 export default function TodayScreen() {
-
   const pagerRef = useRef<PagerView>(null);
   const [page, setPage] = useState(1);
 
@@ -20,27 +29,14 @@ export default function TodayScreen() {
     setPage(index);
   };
 
-  const [habits, setHabits] = useState([
+  const [habits] = useState([
     { name: "Meditate", icon: "🧘", done: false, streak: 4 },
     { name: "Read", icon: "📚", done: false, streak: 7 },
     { name: "Workout", icon: "💪", done: false, streak: 2 },
   ]);
 
-  const toggleHabit = (index: number) => {
-    const updated = [...habits];
-
-    updated[index].done = !updated[index].done;
-
-    if (updated[index].done) {
-      updated[index].streak += 1;
-    }
-
-    setHabits(updated);
-  };
-
   return (
     <View style={styles.container}>
-
       {/* HEADER */}
 
       <View style={styles.headerContainer}>
@@ -51,7 +47,6 @@ export default function TodayScreen() {
       {/* TABS */}
 
       <View style={styles.tabs}>
-
         <TouchableOpacity onPress={() => goToPage(0)}>
           <Text style={[styles.tab, page === 0 && styles.activeTab]}>
             Tasks
@@ -69,7 +64,6 @@ export default function TodayScreen() {
             Focus
           </Text>
         </TouchableOpacity>
-
       </View>
 
       {/* SLIDE PAGES */}
@@ -80,83 +74,71 @@ export default function TodayScreen() {
         initialPage={1}
         onPageSelected={(e) => setPage(e.nativeEvent.position)}
       >
-
         {/* TASKS */}
 
-        <View key="1" style={styles.page}>
-
-          <View style={styles.card}>
+        <ScrollView key="1" style={styles.page}>
+          <View style={styles.section}>
             <Text style={styles.sectionTitle}>Tasks</Text>
 
-            <Text style={styles.task}>• Study React</Text>
-            <Text style={styles.task}>• Go to the gym</Text>
-            <Text style={styles.task}>• Review code</Text>
-          </View>
+            <TaskCard
+              title="Study React"
+              subtitle="Programming"
+            />
 
-        </View>
+            <TaskCard
+              title="Go to the gym"
+            />
+
+            <TaskCard
+              title="Review code"
+            />
+          </View>
+        </ScrollView>
 
         {/* HABITS */}
 
-        <View key="2" style={styles.page}>
-
-          <View style={styles.card}>
-
+        <ScrollView key="2" style={styles.page}>
+          <View style={styles.section}>
             <Text style={styles.sectionTitle}>Habits</Text>
 
             {habits.map((habit, index) => (
-              <TouchableOpacity
+              <HabitCard
                 key={index}
-                style={styles.habit}
-                onPress={() => toggleHabit(index)}
-              >
-
-                <Text style={styles.habitText}>
-                  {habit.icon} {habit.name}
-                </Text>
-
-                <View style={styles.rightSide}>
-
-                  {habit.done && (
-                    <Text style={styles.check}>✓</Text>
-                  )}
-
-                  <Text style={styles.streak}>
-                    🔥 {habit.streak}
-                  </Text>
-
-                </View>
-
-              </TouchableOpacity>
+                icon={habit.icon}
+                name={habit.name}
+                done={habit.done}
+                streak={habit.streak}
+              />
             ))}
-
           </View>
-
-        </View>
+        </ScrollView>
 
         {/* FOCUS */}
 
-        <View key="3" style={styles.page}>
-
-          <View style={styles.card}>
-
+        <ScrollView key="3" style={styles.page}>
+          <View style={styles.section}>
             <Text style={styles.sectionTitle}>Focus</Text>
 
-            <Text style={styles.focusText}>
-              Start a focus session
-            </Text>
+            <FocusCard
+              title="Read"
+              duration={25}
+            />
 
+            <FocusCard
+              title="Learn Spanish"
+              duration={30}
+            />
           </View>
-
-        </View>
-
+        </ScrollView>
       </PagerView>
-
+      <FloatingAddButton />
     </View>
+
+    
   );
 }
 
 const styles = StyleSheet.create({
-
   container: {
     flex: 1,
     paddingTop: 70,
@@ -164,8 +146,8 @@ const styles = StyleSheet.create({
   },
 
   headerContainer: {
-    paddingHorizontal: 20,
-    marginBottom: 10,
+    paddingHorizontal: 24,
+    marginBottom: 20,
   },
 
   header: {
@@ -201,20 +183,11 @@ const styles = StyleSheet.create({
 
   page: {
     flex: 1,
-    alignItems: "center",
-    paddingTop: 10,
   },
 
-  card: {
-    width: "90%",
-    backgroundColor: "white",
-    borderRadius: 20,
-    padding: 20,
-
-    shadowColor: "#000",
-    shadowOpacity: 0.05,
-    shadowRadius: 10,
-    elevation: 3
+  section: {
+    paddingHorizontal: 20,
+    paddingBottom: 40,
   },
 
   sectionTitle: {
@@ -223,42 +196,34 @@ const styles = StyleSheet.create({
     marginBottom: 15,
   },
 
+  taskCard: {
+    backgroundColor: "white",
+    borderRadius: 16,
+    padding: 20,
+
+    shadowColor: "#000",
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
+    elevation: 3,
+  },
+
   task: {
     fontSize: 16,
     marginBottom: 10,
   },
 
-  habit: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingVertical: 14,
-    borderBottomWidth: 1,
-    borderBottomColor: "#eee",
-  },
+  focusCard: {
+    backgroundColor: "white",
+    borderRadius: 16,
+    padding: 20,
 
-  habitText: {
-    fontSize: 16,
-  },
-
-  rightSide: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-  },
-
-  streak: {
-    color: "#FF6B00",
-    fontWeight: "600",
-  },
-
-  check: {
-    fontSize: 16,
-    color: "#2ecc71",
+    shadowColor: "#000",
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
+    elevation: 3,
   },
 
   focusText: {
     fontSize: 16,
-  }
-
+  },
 });

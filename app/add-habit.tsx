@@ -1,33 +1,57 @@
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { useRouter } from "expo-router";
+import { FlatList, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { habitTemplates } from "../data/habitTemplates";
 
-export default function AddHabit() {
+export default function AddHabitScreen() {
+
+  const router = useRouter();
+
+  const selectHabit = (habitId: string) => {
+    router.push(`/habit-config/${habitId}` as any);
+  };
+
   return (
-    <ScrollView style={styles.container}>
 
-      <Text style={styles.title}>Add Habit</Text>
+    <View style={styles.container}>
 
-      {habitTemplates.map((section) => (
-        <View key={section.category} style={styles.section}>
+      <Text style={styles.title}>
+        Choose a Habit
+      </Text>
 
-          <Text style={styles.category}>{section.category}</Text>
+      <FlatList
+        data={habitTemplates}
+        keyExtractor={(item) => item.id}
+        contentContainerStyle={styles.list}
+        renderItem={({ item }) => (
 
-          {section.habits.map((habit) => (
-            <TouchableOpacity key={habit.id} style={styles.habit}>
+          <TouchableOpacity
+            style={styles.card}
+            onPress={() => selectHabit(item.id)}
+          >
 
-              <Text style={styles.icon}>{habit.icon}</Text>
+            <Text style={styles.icon}>
+              {item.icon}
+            </Text>
+
+            <View style={styles.textContainer}>
 
               <Text style={styles.name}>
-                {habit.name}
+                {item.name}
               </Text>
 
-            </TouchableOpacity>
-          ))}
+              <Text style={styles.description}>
+                {item.description}
+              </Text>
 
-        </View>
-      ))}
+            </View>
 
-    </ScrollView>
+          </TouchableOpacity>
+
+        )}
+      />
+
+    </View>
+
   );
 }
 
@@ -35,43 +59,58 @@ const styles = StyleSheet.create({
 
   container: {
     flex: 1,
-    padding: 24,
     backgroundColor: "#F7F8FA",
+    paddingTop: 70,
+    paddingHorizontal: 20,
   },
 
   title: {
     fontSize: 28,
-    fontWeight: "bold",
-    marginBottom: 30,
+    fontWeight: "700",
+    marginBottom: 20,
   },
 
-  section: {
-    marginBottom: 30,
+  list: {
+    paddingBottom: 40,
   },
 
-  category: {
-    fontSize: 18,
-    fontWeight: "600",
-    marginBottom: 10,
-    color: "#555",
-  },
-
-  habit: {
+  card: {
     flexDirection: "row",
     alignItems: "center",
-    padding: 16,
+
     backgroundColor: "white",
-    borderRadius: 14,
-    marginBottom: 10,
+
+    padding: 16,
+    borderRadius: 16,
+
+    marginBottom: 12,
+
+    shadowColor: "#000",
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
+
+    elevation: 3,
   },
 
   icon: {
-    fontSize: 20,
-    marginRight: 12,
+    fontSize: 28,
+    marginRight: 14,
+  },
+
+  textContainer: {
+    flex: 1,
   },
 
   name: {
     fontSize: 16,
-  }
+    fontWeight: "600",
+  },
+
+  description: {
+    fontSize: 13,
+    color: "#666",
+    marginTop: 4,
+    lineHeight: 18,
+  },
 
 });

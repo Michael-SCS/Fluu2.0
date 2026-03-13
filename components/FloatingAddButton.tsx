@@ -2,10 +2,14 @@ import { router } from "expo-router";
 import { useState } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
-
-export default function AddButton() {
+export default function FloatingAddButton() {
 
   const [open, setOpen] = useState(false);
+
+  const goTo = (route: any) => {
+    setOpen(false);
+    router.push(route);
+  };
 
   return (
     <View style={styles.container}>
@@ -13,19 +17,25 @@ export default function AddButton() {
       {open && (
         <View style={styles.menu}>
 
-          <TouchableOpacity style={styles.item}>
-            <Text style={styles.text}>Add Task</Text>
+          <TouchableOpacity
+            style={styles.option}
+            onPress={() => goTo("/add-habit")}
+          >
+            <Text style={styles.optionText}>Habit</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={styles.item}
-            onPress={() => router.push("/add-habit")}
+            style={styles.option}
+            onPress={() => goTo("/add-task")}
           >
-            <Text style={styles.text}>Add Habit</Text>
+            <Text style={styles.optionText}>Task</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.item}>
-            <Text style={styles.text}>Start Focus</Text>
+          <TouchableOpacity
+            style={styles.option}
+            onPress={() => goTo("/add-focus")}
+          >
+            <Text style={styles.optionText}>Focus</Text>
           </TouchableOpacity>
 
         </View>
@@ -35,7 +45,9 @@ export default function AddButton() {
         style={styles.button}
         onPress={() => setOpen(!open)}
       >
-        <Text style={styles.plus}>+</Text>
+        <Text style={styles.plus}>
+          {open ? "×" : "+"}
+        </Text>
       </TouchableOpacity>
 
     </View>
@@ -46,15 +58,15 @@ const styles = StyleSheet.create({
 
   container: {
     position: "absolute",
-    bottom: 20,
-    alignSelf: "center",
-    alignItems: "center",
+    bottom: 90,
+    right: 24,
+    alignItems: "flex-end",
   },
 
   button: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
     backgroundColor: "#000",
 
     justifyContent: "center",
@@ -62,37 +74,36 @@ const styles = StyleSheet.create({
 
     shadowColor: "#000",
     shadowOpacity: 0.25,
-    shadowRadius: 12,
+    shadowRadius: 10,
     elevation: 8
   },
 
   plus: {
     color: "white",
-    fontSize: 34,
-    fontWeight: "bold",
+    fontSize: 30,
+    fontWeight: "600",
   },
 
   menu: {
-    marginBottom: 14,
-    alignItems: "center",
+    marginBottom: 10,
   },
 
-  item: {
+  option: {
     backgroundColor: "white",
-    paddingVertical: 10,
+    paddingVertical: 12,
     paddingHorizontal: 18,
     borderRadius: 14,
     marginBottom: 10,
 
     shadowColor: "#000",
     shadowOpacity: 0.1,
-    shadowRadius: 6,
+    shadowRadius: 8,
     elevation: 4
   },
 
-  text: {
-    fontSize: 15,
+  optionText: {
+    fontSize: 16,
     fontWeight: "500",
-  }
+  },
 
 });

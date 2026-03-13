@@ -1,26 +1,66 @@
-export const habitTemplates = [
+export type HabitTemplate = {
+  id: string;
+  name: string;
+  icon: string;
+  description: string;
+};
+
+export const habitTemplates: HabitTemplate[] = [
+
   {
-    category: "Health",
-    habits: [
-      { id: "water", name: "Drink Water", icon: "💧", type: "counter", defaultGoal: 8 },
-      { id: "exercise", name: "Exercise", icon: "🏃", type: "check" },
-      { id: "sleep", name: "Sleep Early", icon: "😴", type: "check" },
-    ],
+    id: "drink-water",
+    name: "Drink Water",
+    icon: "💧",
+    description:
+      "Staying hydrated improves energy, brain function and overall health.",
   },
 
   {
-    category: "Mind",
-    habits: [
-      { id: "meditate", name: "Meditate", icon: "🧘", type: "timer", defaultGoal: 10 },
-      { id: "read", name: "Read", icon: "📚", type: "counter", defaultGoal: 20 },
-      { id: "journal", name: "Journal", icon: "📝", type: "check" },
-    ],
+    id: "save-money",
+    name: "Save Money",
+    icon: "💰",
+    description:
+      "Saving money regularly helps you build financial stability.",
   },
 
   {
-    category: "Finance",
-    habits: [
-      { id: "save", name: "Save Money", icon: "💰", type: "progress", defaultGoal: 200 },
-    ],
+    id: "read-book",
+    name: "Read a Book",
+    icon: "📚",
+    description:
+      "Reading daily strengthens your mind and expands knowledge.",
   },
+
+  {
+    id: "meditate",
+    name: "Meditate",
+    icon: "🧘",
+    description:
+      "Meditation improves focus and reduces stress.",
+  },
+
+  {
+    id: "listen-podcast",
+    name: "Listen to Podcast",
+    icon: "🎧",
+    description:
+      "Podcasts help you learn new ideas while commuting or relaxing.",
+  },
+
+  {
+    id: "run",
+    name: "Run",
+    icon: "🏃",
+    description:
+      "Running improves cardiovascular health and endurance.",
+  },
+
+  {
+    id: "drink-medicine",
+    name: "Take Medication",
+    icon: "💊",
+    description:
+      "Track your daily medication to stay consistent with treatments.",
+  },
+
 ];
