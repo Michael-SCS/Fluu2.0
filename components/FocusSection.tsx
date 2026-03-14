@@ -1,85 +1,95 @@
-import { useFocusStore } from "@/store/focusStore";
 import { ScrollView, StyleSheet, Text } from "react-native";
+
+import { useFocusStore } from "@/store/focusStore";
 import FocusCard from "./FocusCard";
 
 export default function FocusSection() {
 
-  const activities =
-    useFocusStore((state) => state.activities);
+  // obtenemos todos los focus del store
+  const activities = useFocusStore((state) => state.activities);
 
-  const ourFavorites =
-    activities.filter((a) => !a.custom);
-
-  const yourFavorites =
-    [...activities]
-      .sort((a, b) => b.usageCount - a.usageCount)
-      .slice(0, 3)
-      .filter((a) => a.usageCount > 0);
+  // separarlos
+  const defaultFocus = activities.filter((f) => !f.custom);
+  const customFocus = activities.filter((f) => f.custom);
 
   return (
 
-    <ScrollView contentContainerStyle={styles.section}>
+    <ScrollView contentContainerStyle={styles.container}>
+
+      {/* OUR FAVORITES */}
 
       <Text style={styles.sectionTitle}>
-        ⭐ Our Favorites
+        Our Favorites
       </Text>
 
-      {ourFavorites.map((focus) => (
+      {defaultFocus.map((focus) => (
 
         <FocusCard
           key={focus.id}
           id={focus.id}
           title={focus.title}
+          description={focus.description}
           duration={focus.duration}
           breakTime={focus.breakTime}
           sessions={focus.sessions}
-          description={focus.description}
           usageCount={focus.usageCount}
         />
 
       ))}
 
 
-      {yourFavorites.length > 0 && (
+      {/* USER CREATIONS */}
 
-        <>
-          <Text style={styles.sectionTitle}>
-            🔥 Your Favorites
-          </Text>
+      <Text style={[styles.sectionTitle, { marginTop: 25 }]}>
+        Your Creations
+      </Text>
 
-          {yourFavorites.map((focus) => (
+      {customFocus.length === 0 && (
 
-            <FocusCard
-              key={focus.id}
-              id={focus.id}
-              title={focus.title}
-              duration={focus.duration}
-              description={focus.description}
-            />
-
-          ))}
-
-        </>
+        <Text style={styles.emptyText}>
+          You haven't created any focus yet.
+        </Text>
 
       )}
+
+      {customFocus.map((focus) => (
+
+        <FocusCard
+          key={focus.id}
+          id={focus.id}
+          title={focus.title}
+          description={focus.description}
+          duration={focus.duration}
+          breakTime={focus.breakTime}
+          sessions={focus.sessions}
+          usageCount={focus.usageCount}
+        />
+
+      ))}
 
     </ScrollView>
 
   );
+
 }
+
 
 const styles = StyleSheet.create({
 
-  section: {
-    paddingHorizontal: 20,
-    paddingBottom: 60,
+  container:{
+    paddingHorizontal:20,
+    paddingBottom:60
   },
 
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: "600",
-    marginBottom: 14,
-    marginTop: 18,
+  sectionTitle:{
+    fontSize:18,
+    fontWeight:"600",
+    marginBottom:12
   },
+
+  emptyText:{
+    color:"#777",
+    marginBottom:10
+  }
 
 });

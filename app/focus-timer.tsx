@@ -1,7 +1,8 @@
-import { useLocalSearchParams } from "expo-router";
+import { Stack, useLocalSearchParams } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 
 import {
+  Animated,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -9,32 +10,53 @@ import {
   View
 } from "react-native";
 
+import ConfettiCannon from "react-native-confetti-cannon";
 import Svg, { Circle } from "react-native-svg";
+
+const AnimatedCircle = Animated.createAnimatedComponent(Circle);
 
 export default function FocusTimer() {
 
-  const { duration, breakTime, sessions } = useLocalSearchParams();
+  const { duration, breakTime, sessions, title } = useLocalSearchParams();
 
   const focusDuration = Number(duration ?? 25) * 60;
   const breakDuration = Number(breakTime ?? 5) * 60;
   const totalSessions = Number(sessions ?? 1);
 
+  const [phase, setPhase] = useState<"focus" | "break">("focus");
+  const [session, setSession] = useState(1);
   const [timeLeft, setTimeLeft] = useState(focusDuration);
   const [running, setRunning] = useState(false);
-  const [isBreak, setIsBreak] = useState(false);
-  const [session, setSession] = useState(1);
+  const [finished, setFinished] = useState(false);
 
+  const [countdown, setCountdown] = useState<number | null>(null);
+
+  const progressAnim = useRef(new Animated.Value(0)).current;
   const intervalRef = useRef<any>(null);
 
   const radius = 110;
   const circumference = 2 * Math.PI * radius;
 
-  const currentDuration = isBreak ? breakDuration : focusDuration;
+  const currentDuration =
+    phase === "focus" ? focusDuration : breakDuration;
 
-  // progreso exacto basado en tiempo real
-  const progress = 1 - timeLeft / currentDuration;
+  const elapsed = currentDuration - timeLeft;
+  const progress = elapsed / currentDuration;
 
-  const strokeDashoffset = circumference * (1 - progress);
+  const strokeDashoffset = progressAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [circumference, 0]
+  });
+
+  useEffect(() => {
+
+    Animated.timing(progressAnim, {
+      toValue: progress,
+      duration: 900,
+      useNativeDriver: false
+    }).start();
+
+  }, [progress]);
 
 
   useEffect(() => {
@@ -49,30 +71,24 @@ export default function FocusTimer() {
 
           Vibration.vibrate(400);
 
-          // TERMINÓ FOCUS
-          if (!isBreak) {
+          if (phase === "focus") {
 
-            setIsBreak(true);
-
+            setPhase("break");
             return breakDuration;
 
           }
 
-          // TERMINÓ BREAK
-
           if (session < totalSessions) {
 
             setSession((s) => s + 1);
-
-            setIsBreak(false);
+            setPhase("focus");
 
             return focusDuration;
 
           }
 
-          // TERMINÓ TODO
-
           setRunning(false);
+          setFinished(true);
 
           return 0;
 
@@ -86,107 +102,193 @@ export default function FocusTimer() {
 
     return () => clearInterval(intervalRef.current);
 
-  }, [running]);
+  }, [running, phase, session]);
+
+
+  const startTimer = () => {
+
+  if (session === 1 && phase === "focus") {
+
+    setCountdown(3);
+
+    const countdownInterval = setInterval(() => {
+
+      setCountdown((prev) => {
+
+        if (prev === 1) {
+
+          clearInterval(countdownInterval);
+
+          setCountdown(null);
+
+          // vibración larga al iniciar focus
+          Vibration.vibrate(400);
+
+          setRunning(true);
+
+          return null;
+
+        }
+
+        // vibración corta en cada número
+        Vibration.vibrate(120);
+
+        return (prev ?? 0) - 1;
+
+      });
+
+    }, 1000);
+
+    return;
+
+  }
+
+  setRunning(true);
+
+};
 
 
   const minutes = Math.floor(timeLeft / 60);
   const seconds = timeLeft % 60;
 
-  const time = `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
+  const formattedTime =
+    `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
+
+
+  const nextLabel = () => {
+
+    if (phase === "focus")
+      return `Next: Break (${breakDuration / 60} min)`;
+
+    if (session < totalSessions)
+      return `Next: Focus (${focusDuration / 60} min)`;
+
+    return "Final Session";
+
+  };
 
 
   return (
 
-    <View style={styles.container}>
+    <>
 
-      <Text style={styles.mode}>
-        {isBreak ? "Break Time" : "Focus Time"}
-      </Text>
+      <Stack.Screen
+        options={{
+          title: String(title ?? "Focus"),
+          headerTitleAlign: "center"
+        }}
+      />
 
-      <Text style={styles.session}>
-        Session {session}/{totalSessions}
-      </Text>
+      <View style={styles.container}>
 
-
-      <View style={styles.circleContainer}>
-
-        <Svg width="260" height="260">
-
-          <Circle
-            stroke="#eee"
-            fill="none"
-            cx="130"
-            cy="130"
-            r={radius}
-            strokeWidth="12"
+        {finished && (
+          <ConfettiCannon
+            count={120}
+            origin={{ x: 200, y: 0 }}
+            fadeOut
           />
+        )}
 
-          <Circle
-            stroke={isBreak ? "#FF3B30" : "#4CAF50"}
-            fill="none"
-            cx="130"
-            cy="130"
-            r={radius}
-            strokeWidth="12"
-            strokeDasharray={circumference}
-            strokeDashoffset={strokeDashoffset}
-            strokeLinecap="round"
-            rotation="-90"
-            origin="130,130"
-          />
+        <Text style={styles.mode}>
+          {phase === "focus" ? "Focus Time" : "Break Time"}
+        </Text>
 
-        </Svg>
+        <Text style={styles.session}>
+          Session {session} / {totalSessions}
+        </Text>
 
-        <View style={styles.timerCenter}>
-          <Text style={styles.time}>{time}</Text>
+        <Text style={styles.next}>
+          {nextLabel()}
+        </Text>
+
+
+        <View style={styles.circleContainer}>
+
+          <Svg width="260" height="260">
+
+            <Circle
+              stroke="#eee"
+              fill="none"
+              cx="130"
+              cy="130"
+              r={radius}
+              strokeWidth="12"
+            />
+
+            <AnimatedCircle
+              stroke={phase === "focus" ? "#4CAF50" : "#FF3B30"}
+              fill="none"
+              cx="130"
+              cy="130"
+              r={radius}
+              strokeWidth="12"
+              strokeDasharray={circumference}
+              strokeDashoffset={strokeDashoffset}
+              strokeLinecap="round"
+              rotation="-90"
+              origin="130,130"
+            />
+
+          </Svg>
+
+          <View style={styles.timerCenter}>
+
+            {countdown !== null ? (
+
+              <Text style={styles.countdown}>
+                {countdown}
+              </Text>
+
+            ) : (
+
+              <Text style={styles.time}>
+                {formattedTime}
+              </Text>
+
+            )}
+
+          </View>
+
+        </View>
+
+
+        <View style={styles.controls}>
+
+          {!running && (
+
+            <TouchableOpacity
+              style={styles.start}
+              onPress={startTimer}
+            >
+
+              <Text style={styles.buttonText}>
+                Start
+              </Text>
+
+            </TouchableOpacity>
+
+          )}
+
+          {running && (
+
+            <TouchableOpacity
+              style={styles.pause}
+              onPress={() => setRunning(false)}
+            >
+
+              <Text style={styles.buttonText}>
+                Pause
+              </Text>
+
+            </TouchableOpacity>
+
+          )}
+
         </View>
 
       </View>
 
-
-      <View style={styles.controls}>
-
-        {!running && (
-
-          <TouchableOpacity
-            style={styles.start}
-            onPress={() => setRunning(true)}
-          >
-            <Text style={styles.buttonText}>Start</Text>
-          </TouchableOpacity>
-
-        )}
-
-        {running && (
-
-          <TouchableOpacity
-            style={styles.pause}
-            onPress={() => setRunning(false)}
-          >
-            <Text style={styles.buttonText}>Pause</Text>
-          </TouchableOpacity>
-
-        )}
-
-        <TouchableOpacity
-          style={styles.reset}
-          onPress={() => {
-
-            setRunning(false);
-            setSession(1);
-            setIsBreak(false);
-            setTimeLeft(focusDuration);
-
-          }}
-        >
-
-          <Text style={styles.buttonText}>Reset</Text>
-
-        </TouchableOpacity>
-
-      </View>
-
-    </View>
+    </>
 
   );
 
@@ -195,66 +297,69 @@ export default function FocusTimer() {
 
 const styles = StyleSheet.create({
 
-  container: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "#fff"
+  container:{
+    flex:1,
+    justifyContent:"center",
+    alignItems:"center",
+    backgroundColor:"#fff"
   },
 
-  mode: {
-    fontSize: 26,
-    fontWeight: "700"
+  mode:{
+    fontSize:26,
+    fontWeight:"700"
   },
 
-  session: {
-    color: "#777",
-    marginBottom: 40
+  session:{
+    color:"#777",
+    marginBottom:6
   },
 
-  circleContainer: {
-    justifyContent: "center",
-    alignItems: "center"
+  next:{
+    color:"#aaa",
+    marginBottom:30
   },
 
-  timerCenter: {
-    position: "absolute"
+  circleContainer:{
+    justifyContent:"center",
+    alignItems:"center"
   },
 
-  time: {
-    fontSize: 44,
-    fontWeight: "bold"
+  timerCenter:{
+    position:"absolute"
   },
 
-  controls: {
-    flexDirection: "row",
-    marginTop: 40
+  time:{
+    fontSize:44,
+    fontWeight:"bold"
   },
 
-  start: {
-    backgroundColor: "#4CAF50",
-    padding: 16,
-    borderRadius: 10,
-    marginHorizontal: 10
+  countdown:{
+    fontSize:72,
+    fontWeight:"bold"
   },
 
-  pause: {
-    backgroundColor: "#FF9800",
-    padding: 16,
-    borderRadius: 10,
-    marginHorizontal: 10
+  controls:{
+    flexDirection:"row",
+    marginTop:40
   },
 
-  reset: {
-    backgroundColor: "#444",
-    padding: 16,
-    borderRadius: 10,
-    marginHorizontal: 10
+  start:{
+    backgroundColor:"#4CAF50",
+    padding:16,
+    borderRadius:10,
+    marginHorizontal:10
   },
 
-  buttonText: {
-    color: "white",
-    fontWeight: "600"
+  pause:{
+    backgroundColor:"#FF9800",
+    padding:16,
+    borderRadius:10,
+    marginHorizontal:10
+  },
+
+  buttonText:{
+    color:"white",
+    fontWeight:"600"
   }
 
 });

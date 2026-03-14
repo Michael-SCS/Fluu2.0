@@ -1,39 +1,62 @@
-import { ScrollView, StyleSheet, Text } from "react-native";
+import { FlatList, StyleSheet, View } from "react-native";
+
+import { useGroceryStore } from "@/store/groceryStore";
+import { useTasksStore } from "@/store/tasksStore";
+
+import FavoriteTasksDropdown from "./FavoriteTasksDropdown";
+import GroceryListTask from "./GroceryListTask";
 import TaskCard from "./TaskCard";
 
 export default function TasksSection() {
 
+  const tasks = useTasksStore((state) => state.tasks);
+
+  const groceryProducts = useGroceryStore((state) => state.products);
+
+
+  const showFavorites =
+    tasks.length === 0 && groceryProducts.length === 0;
+
+  const showGrocery =
+    groceryProducts.length > 0;
+
+
   return (
 
-    <ScrollView contentContainerStyle={styles.section}>
+    <View style={{ flex: 1 }}>
 
-      <Text style={styles.sectionTitle}>
-        Tasks
-      </Text>
+      {/* Grocery List solo si existe */}
 
-      <TaskCard title="Study React" subtitle="Programming" />
+      {showGrocery && <GroceryListTask />}
 
-      <TaskCard title="Go to the gym" />
 
-      <TaskCard title="Review code" />
+      {/* Favorites solo si no hay nada */}
 
-    </ScrollView>
+      {showFavorites && <FavoriteTasksDropdown />}
+
+
+      {/* Tasks normales */}
+
+      <FlatList
+        contentContainerStyle={styles.list}
+        data={tasks}
+        keyExtractor={(item) => item.id}
+        renderItem={({ item }) => (
+          <TaskCard task={item} />
+        )}
+      />
+
+    </View>
 
   );
+
 }
 
 const styles = StyleSheet.create({
 
-  section: {
+  list: {
     paddingHorizontal: 20,
-    paddingBottom: 60,
-  },
-
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: "600",
-    marginBottom: 14,
-    marginTop: 18,
+    paddingTop: 10,
   },
 
 });

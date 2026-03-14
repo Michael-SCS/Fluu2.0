@@ -1,34 +1,29 @@
 import { useState } from "react";
 import {
   Modal,
-  ScrollView,
   StyleSheet,
   Text,
   TextInput,
-  TouchableOpacity
+  TouchableOpacity,
+  View,
 } from "react-native";
 
 import { useFocusStore } from "@/store/focusStore";
 
-export default function CreateFocusModal({ visible, onClose }: any) {
+type Props = {
+  visible: boolean;
+  onClose: () => void;
+};
 
-  const addActivity =
-    useFocusStore((state) => state.addActivity);
+export default function CreateFocusModal({ visible, onClose }: Props) {
+
+  const addActivity = useFocusStore((state) => state.addActivity);
 
   const [title, setTitle] = useState("");
-
   const [description, setDescription] = useState("");
-
-  const [studyTime, setStudyTime] = useState("25");
-
-  const [studySessions, setStudySessions] = useState("4");
-
-  const [breakTime, setBreakTime] = useState("5");
-
-  const [breakSessions, setBreakSessions] = useState("4");
-
-
-
+  const [studyTime, setStudyTime] = useState("");
+  const [breakTime, setBreakTime] = useState("");
+  const [sessions, setSessions] = useState("");
 
   const createFocus = () => {
 
@@ -36,15 +31,15 @@ export default function CreateFocusModal({ visible, onClose }: any) {
 
     id: Date.now().toString(),
 
-    title,
+    title: title,
 
-    description,
+    description: description,
 
     duration: Number(studyTime),
 
-    breakTime: Number(breakTime),
+    breakTime: Number(breakTime || 5),
 
-    sessions: Number(studySessions),
+    sessions: Number(sessions || 1),
 
     usageCount: 0,
 
@@ -52,158 +47,139 @@ export default function CreateFocusModal({ visible, onClose }: any) {
 
   });
 
-    onClose();
+  onClose();
 
-  };
-
+};
 
   return (
 
-    <Modal visible={visible} animationType="slide">
+    <Modal
+      visible={visible}
+      animationType="slide"
+      transparent
+    >
 
-      <ScrollView contentContainerStyle={styles.container}>
+      <View style={styles.overlay}>
 
-        <Text style={styles.title}>
-          Create Focus Mode
-        </Text>
+        <View style={styles.container}>
 
-
-        <TextInput
-          style={styles.input}
-          placeholder="Focus name"
-          value={title}
-          onChangeText={setTitle}
-        />
-
-
-        <TextInput
-          style={styles.input}
-          placeholder="Description"
-          value={description}
-          onChangeText={setDescription}
-        />
-
-
-        <Text style={styles.label}>
-          Study Time (minutes)
-        </Text>
-
-        <TextInput
-          style={styles.input}
-          keyboardType="numeric"
-          value={studyTime}
-          onChangeText={setStudyTime}
-        />
-
-
-        <Text style={styles.label}>
-          Study Sessions
-        </Text>
-
-        <TextInput
-          style={styles.input}
-          keyboardType="numeric"
-          value={studySessions}
-          onChangeText={setStudySessions}
-        />
-
-
-        <Text style={styles.label}>
-          Break Time (minutes)
-        </Text>
-
-        <TextInput
-          style={styles.input}
-          keyboardType="numeric"
-          value={breakTime}
-          onChangeText={setBreakTime}
-        />
-
-
-        <Text style={styles.label}>
-          Break Sessions
-        </Text>
-
-        <TextInput
-          style={styles.input}
-          keyboardType="numeric"
-          value={breakSessions}
-          onChangeText={setBreakSessions}
-        />
-
-
-        <TouchableOpacity
-          style={styles.button}
-          onPress={createFocus}
-        >
-
-          <Text style={styles.buttonText}>
-            Create Focus
+          <Text style={styles.title}>
+            New Focus
           </Text>
 
-        </TouchableOpacity>
+          <TextInput
+            style={styles.input}
+            placeholder="Focus name"
+            value={title}
+            onChangeText={setTitle}
+          />
 
+          <TextInput
+            style={styles.input}
+            placeholder="Description"
+            value={description}
+            onChangeText={setDescription}
+          />
 
-        <TouchableOpacity
-          onPress={onClose}
-          style={styles.cancel}
-        >
+          <TextInput
+            style={styles.input}
+            placeholder="Focus Time (minutes)"
+            keyboardType="numeric"
+            value={studyTime}
+            onChangeText={setStudyTime}
+          />
 
-          <Text>
-            Cancel
-          </Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Break Time (minutes)"
+            keyboardType="numeric"
+            value={breakTime}
+            onChangeText={setBreakTime}
+          />
 
-        </TouchableOpacity>
+          <TextInput
+            style={styles.input}
+            placeholder="Sessions"
+            keyboardType="numeric"
+            value={sessions}
+            onChangeText={setSessions}
+          />
 
-      </ScrollView>
+          <View style={styles.buttons}>
+
+            <TouchableOpacity
+              style={styles.cancel}
+              onPress={onClose}
+            >
+              <Text>Cancel</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.create}
+              onPress={createFocus}
+            >
+              <Text style={{color:"#fff"}}>
+                Create
+              </Text>
+            </TouchableOpacity>
+
+          </View>
+
+        </View>
+
+      </View>
 
     </Modal>
 
   );
+
 }
+
 
 const styles = StyleSheet.create({
 
+  overlay:{
+    flex:1,
+    backgroundColor:"rgba(0,0,0,0.4)",
+    justifyContent:"center",
+    padding:20
+  },
+
   container:{
-    padding:30
+    backgroundColor:"#fff",
+    borderRadius:16,
+    padding:20
   },
 
   title:{
-    fontSize:28,
+    fontSize:20,
     fontWeight:"bold",
-    marginBottom:20
-  },
-
-  label:{
-    marginTop:10,
-    marginBottom:6,
-    fontWeight:"600"
+    marginBottom:15
   },
 
   input:{
     borderWidth:1,
     borderColor:"#ddd",
     borderRadius:10,
-    padding:14,
-    marginBottom:10
+    padding:12,
+    marginBottom:12
   },
 
-  button:{
-    backgroundColor:"#000",
-    padding:16,
-    borderRadius:10,
-    alignItems:"center",
-    marginTop:20
-  },
-
-  buttonText:{
-    color:"white",
-    fontWeight:"600"
+  buttons:{
+    flexDirection:"row",
+    justifyContent:"flex-end",
+    marginTop:10
   },
 
   cancel:{
-    alignItems:"center",
-    marginTop:20
+    marginRight:10,
+    padding:10
+  },
+
+  create:{
+    backgroundColor:"#000",
+    padding:12,
+    borderRadius:10
   }
 
 });

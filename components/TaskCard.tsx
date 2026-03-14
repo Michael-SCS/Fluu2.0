@@ -1,68 +1,101 @@
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import {
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View
+} from "react-native";
+
+import { Task, useTasksStore } from "@/store/tasksStore";
 
 type Props = {
-  title: string
-  subtitle?: string
-}
+  task: Task;
+};
 
-export default function TaskCard({ title, subtitle }: Props) {
+export default function TaskCard({ task }: Props) {
+
+  const toggleTask = useTasksStore((s) => s.toggleTask);
+  const deleteTask = useTasksStore((s) => s.deleteTask);
 
   return (
 
-    <TouchableOpacity style={styles.card}>
+    <View style={styles.container}>
 
-      <View style={styles.checkbox} />
+      {/* Checkbox */}
 
-      <View style={{ flex: 1 }}>
+      <TouchableOpacity
+        style={[
+          styles.checkbox,
+          task.completed && styles.checked
+        ]}
+        onPress={() => toggleTask(task.id)}
+      />
 
-        <Text style={styles.title}>{title}</Text>
 
-        {subtitle && (
-          <Text style={styles.subtitle}>{subtitle}</Text>
-        )}
+      {/* Task title */}
 
-      </View>
+      <Text
+        style={[
+          styles.title,
+          task.completed && styles.completed
+        ]}
+      >
+        {task.title}
+      </Text>
 
-    </TouchableOpacity>
 
-  )
+      {/* Delete button */}
+
+      <TouchableOpacity
+        onPress={() => deleteTask(task.id)}
+      >
+        <Text style={styles.delete}>
+          ✕
+        </Text>
+      </TouchableOpacity>
+
+    </View>
+
+  );
+
 }
 
 const styles = StyleSheet.create({
 
-  card: {
+  container: {
     flexDirection: "row",
     alignItems: "center",
-
     backgroundColor: "white",
-
-    padding: 16,
-    borderRadius: 14,
-
-    marginBottom: 12,
+    padding: 14,
+    borderRadius: 12,
+    marginBottom: 10,
   },
 
   checkbox: {
-    width: 20,
-    height: 20,
-
+    width: 22,
+    height: 22,
     borderRadius: 6,
     borderWidth: 2,
-
-    borderColor: "#ddd",
-
+    borderColor: "#4F46E5",
     marginRight: 12,
   },
 
-  title: {
-    fontSize: 16,
-    fontWeight: "500",
+  checked: {
+    backgroundColor: "#4F46E5",
   },
 
-  subtitle: {
-    color: "#888",
-    fontSize: 13,
-    marginTop: 2,
+  title: {
+    flex: 1,
+    fontSize: 16,
+  },
+
+  completed: {
+    textDecorationLine: "line-through",
+    color: "#999",
+  },
+
+  delete: {
+    fontSize: 18,
+    color: "#999",
   },
 
 });
