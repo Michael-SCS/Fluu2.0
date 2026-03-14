@@ -8,6 +8,8 @@ export type Habit = {
 
   id: string
 
+  templateId: string
+
   title: string
 
   description: string
@@ -30,6 +32,8 @@ export type Habit = {
 
   completedDates: string[]
 
+  skippedDates?: string[]
+
 }
 
 
@@ -42,6 +46,12 @@ type HabitStore = {
 
   addHabit: (habit: Habit) => void
 
+  updateHabit: (habitId: string, data: Partial<Habit>) => void
+
+  deleteHabit: (habitId: string) => void
+
+  deleteHabitForToday: (habitId: string) => void
+
   incrementHabitProgress: (habitId: string) => void
 
   resetDailyProgress: () => void
@@ -51,7 +61,9 @@ type HabitStore = {
 
 
 const getToday = () => {
+
   return new Date().toISOString().split("T")[0]
+
 }
 
 
@@ -70,25 +82,69 @@ export const useHabitStore = create<HabitStore>()(
 
       addHabit: (habit) =>
         set((state) => ({
-          habits: [...state.habits, habit],
+          habits: [...state.habits, habit]
         })),
+
+
+
+      updateHabit: (habitId, data) =>
+        set((state) => ({
+          habits: state.habits.map(h =>
+            h.id === habitId ? { ...h, ...data } : h
+          )
+        })),
+
+
+
+      deleteHabit: (habitId) =>
+        set((state) => ({
+          habits: state.habits.filter(h => h.id !== habitId)
+        })),
+
+
+
+      deleteHabitForToday: (habitId) =>
+        set((state) => {
+
+          const today = getToday()
+
+          return {
+
+            habits: state.habits.map(h => {
+
+              if (h.id !== habitId) return h
+
+              return {
+
+                ...h,
+
+                skippedDates: [...(h.skippedDates ?? []), today]
+
+              }
+
+            })
+
+          }
+
+        }),
 
 
 
       incrementHabitProgress: (habitId) =>
         set((state) => ({
 
-          habits: state.habits.map((habit) => {
+          habits: state.habits.map(h => {
 
-            if (habit.id !== habitId) return habit
+            if (h.id !== habitId) return h
 
-            let progress = habit.progress + 1
-
-            if (progress > habit.goal) progress = habit.goal
+            const progress = Math.min(h.goal, h.progress + 1)
 
             return {
-              ...habit,
+
+              ...h,
+
               progress
+
             }
 
           })
@@ -107,16 +163,22 @@ export const useHabitStore = create<HabitStore>()(
 
 
 
-        const habits = get().habits.map((habit) => ({
-          ...habit,
+        const habits = get().habits.map(h => ({
+
+          ...h,
+
           progress: 0
+
         }))
 
 
 
         set({
+
           habits,
+
           lastProgressReset: today
+
         })
 
       }
@@ -124,8 +186,11 @@ export const useHabitStore = create<HabitStore>()(
     }),
 
     {
+
       name: "fluu-habits-storage",
+
       storage: createJSONStorage(() => AsyncStorage)
+
     }
 
   )

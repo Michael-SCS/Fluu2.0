@@ -1,60 +1,69 @@
-export function shouldShowHabitToday(habit:any){
+export function shouldShowHabitToday(habit: any) {
 
-const today = new Date()
+  const today = new Date()
 
-const todayDay = today.getDay()
+  const todayDay = today.getDay()
+  const todayDate = today.getDate()
+  const todayMonth = today.getMonth()
 
-const todayDate = today.getDate()
+  const todayString = today.toISOString().split("T")[0]
 
-const todayMonth = today.getMonth()
-
-const startDate = new Date(habit.startDate)
-
-
-
-if(today < startDate) return false
+  const startDate = new Date(habit.startDate)
 
 
 
-switch(habit.repeat){
-
-case "once":
-
-return today.toDateString() === startDate.toDateString()
-
-
-
-case "daily":
-
-return true
+  // Si el hábito fue eliminado solo hoy
+  if (habit.skippedDates?.includes(todayString)) {
+    return false
+  }
 
 
 
-case "weekly":
-
-return habit.weekDays?.includes(todayDay)
-
-
-
-case "monthly":
-
-return todayDate === startDate.getDate()
+  // Si el hábito empieza en el futuro
+  if (today < startDate) {
+    return false
+  }
 
 
 
-case "yearly":
+  switch (habit.repeat) {
 
-return (
-todayDate === startDate.getDate() &&
-todayMonth === habit.month
-)
+    case "once":
+      return today.toDateString() === startDate.toDateString()
 
 
 
-default:
+    case "daily":
+      return true
 
-return false
 
-}
+
+    case "weekly":
+
+      if (!habit.weekDays) return false
+
+      return habit.weekDays.includes(todayDay)
+
+
+
+    case "monthly":
+
+      return todayDate === startDate.getDate()
+
+
+
+    case "yearly":
+
+      return (
+        todayDate === startDate.getDate() &&
+        todayMonth === habit.month
+      )
+
+
+
+    default:
+      return false
+
+  }
 
 }

@@ -4,7 +4,7 @@ import { useHabitStore } from "@/store/habitStore"
 
 import HabitCard from "./HabitCard"
 
-import { shouldShowHabitToday } from "./habitLogic"
+import { shouldShowHabitToday } from "@/utils/shouldShowHabitToday"
 
 
 
@@ -12,8 +12,7 @@ export default function HabitsSection() {
 
   const habits = useHabitStore(state => state.habits)
 
-
-
+  // 🔹 Filtrar hábitos que deben aparecer hoy
   const todayHabits = habits.filter(habit =>
     shouldShowHabitToday(habit)
   )
